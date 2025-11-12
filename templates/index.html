@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Torrent Search Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .search-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        #searchBtn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        #searchBtn:hover {
+            transform: translateY(-2px);
+        }
+
+        #searchBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            color: #666;
+        }
+
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .results-count {
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .sort-options {
+            display: flex;
+            gap: 10px;
+        }
+
+        .sort-btn {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .sort-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .torrent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .torrent-item {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+
+        .torrent-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .torrent-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .torrent-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+            margin-right: 15px;
+            word-break: break-word;
+        }
+
+        .torrent-source {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            white-space: nowrap;
+        }
+
+        .torrent-stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .seeds {
+            color: #28a745;
+        }
+
+        .peers {
+            color: #dc3545;
+        }
+
+        .torrent-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-magnet {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-magnet:hover {
+            background: #218838;
+        }
+
+        .btn-details {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-details:hover {
+            background: #0056b3;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .torrent-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .torrent-stats {
+                justify-content: space-between;
+            }
+
+            .results-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 Torrent Search Engine</h1>
+            <p class="subtitle">Search multiple torrent sources with detailed information</p>
+        </header>
+
+        <main>
+            <section class="search-container">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Enter torrent name..." autocomplete="off">
+                    <button id="searchBtn">Search</button>
+                </div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="sourceFilter">Source:</label>
+                        <select id="sourceFilter">
+                            <option value="">All Sources</option>
+                            <option value="1337x">1337x</option>
+                            <option value="The Pirate Bay">The Pirate Bay</option>
+                            <option value="YTS">YTS</option>
+                            <option value="EZTV">EZTV</option>
+                            <option value="TorLock">TorLock</option>
+                            <option value="Nyaa">Nyaa</option>
+                            <option value="Zooqle">Zooqle</option>
+                            <option value="BTDB">BTDB</option>
+                            <option value="GloDLS">GloDLS</option>
+                            <option value="MagnetDL">MagnetDL</option>
+                            <option value="TorrentFunk">TorrentFunk</option>
+                            <option value="iDope">iDope</option>
+                            <option value="TorrentGalaxy">TorrentGalaxy</option>
+                            <option value="YourBittorrent">YourBittorrent</option>
+                            <option value="BitSearch">BitSearch</option>
+                            <option value="SumoTorrent">SumoTorrent</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="sizeFilter">Min Size:</label>
+                        <select id="sizeFilter">
+                            <option value="">Any Size</option>
+                            <option value="0">Small (< 100MB)</option>
+                            <option value="100">Medium (100MB - 1GB)</option>
+                            <option value="1024">Large (> 1GB)</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="seedFilter">Min Seeds:</label>
+                        <select id="seedFilter">
+                            <option value="0">Any</option>
+                            <option value="1">1+</option>
+                            <option value="10">10+</option>
+                            <option value="50">50+</option>
+                            <option value="100">100+</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>
+                            <input type="checkbox" id="onionToggle"> Include Onion Sites
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <div class="error" id="errorMessage"></div>
+
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p>Searching torrent sites...</p>
+            </div>
+
+            <section class="results-container" id="resultsContainer">
+                <div class="results-header">
+                    <div class="results-count" id="resultsCount"></div>
+                    <div class="sort-options">
+                        <button class="sort-btn active" data-sort="seeds">Seeds</button>
+                        <button class="sort-btn" data-sort="size">Size</button>
+                        <button class="sort-btn" data-sort="name">Name</button>
+                    </div>
+                </div>
+                <div class="torrent-list" id="torrentList"></div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        let currentResults = [];
+        let currentSort = 'seeds';
+
+        // DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const torrentList = document.getElementById('torrentList');
+        const resultsCount = document.getElementById('resultsCount');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Event listeners
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Sort buttons
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentSort = btn.dataset.sort;
+                sortAndDisplayResults();
+            });
+        });
+
+        // Filter listeners
+        document.getElementById('sourceFilter').addEventListener('change', filterAndDisplayResults);
+        document.getElementById('sizeFilter').addEventListener('change', filterAndDisplayResults);
+        document.getElementById('seedFilter').addEventListener('change', filterAndDisplayResults);
+        document.getElementById('onionToggle').addEventListener('change', performSearch);
+
+        async function performSearch() {
+            const query = searchInput.value.trim();
+            if (!query) {
+                showError('Please enter a search query');
+                return;
+            }
+
+            const includeOnion = document.getElementById('onionToggle').checked;
+            
+            hideError();
+            showLoading();
+            hideResults();
+
+            try {
+                const response = await fetch(`/search?q=${encodeURIComponent(query)}&onion=${includeOnion}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+
+                currentResults = data.results || [];
+                sortAndDisplayResults();
+            } catch (error) {
+                showError('Failed to fetch results. Please try again.');
+                console.error('Search error:', error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function sortAndDisplayResults() {
+            let sortedResults = [...currentResults];
+
+            switch (currentSort) {
+                case 'seeds':
+                    sortedResults.sort((a, b) => b.seeds - a.seeds);
+                    break;
+                case 'size':
+                    sortedResults.sort((a, b) => parseSize(b.size) - parseSize(a.size));
+                    break;
+                case 'name':
+                    sortedResults.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+            }
+
+            filterAndDisplayResults(sortedResults);
+        }
+
+        function filterAndDisplayResults(results = currentResults) {
+            const sourceFilter = document.getElementById('sourceFilter').value;
+            const sizeFilter = document.getElementById('sizeFilter').value;
+            const seedFilter = parseInt(document.getElementById('seedFilter').value);
+
+            let filteredResults = results.filter(torrent => {
+                // Source filter
+                if (sourceFilter && torrent.source !== sourceFilter) {
+                    return false;
+                }
+
+                // Size filter
+                if (sizeFilter) {
+                    const sizeMB = parseSize(torrent.size);
+                    if (sizeMB < parseInt(sizeFilter)) {
+                        return false;
+                    }
+                }
+
+                // Seed filter
+                if (torrent.seeds < seedFilter) {
+                    return false;
+                }
+
+                return true;
+            });
+
+            displayResults(filteredResults);
+        }
+
+        function displayResults(results) {
+            if (results.length === 0) {
+                torrentList.innerHTML = '<div class="no-results">No torrents found matching your criteria.</div>';
+                resultsCount.textContent = 'No results found';
+                showResults();
+                return;
+            }
+
+            resultsCount.textContent = `Found ${results.length} torrent${results.length !== 1 ? 's' : ''}`;
+
+            torrentList.innerHTML = results.map(torrent => `
+                <div class="torrent-item">
+                    <div class="torrent-header">
+                        <div class="torrent-title">${escapeHtml(torrent.name)}</div>
+                        <div class="torrent-source">${torrent.source}</div>
+                    </div>
+                    <div class="torrent-stats">
+                        <div class="stat">
+                            <span>🌱 Seeds:</span>
+                            <span class="stat-value seeds">${torrent.seeds}</span>
+                        </div>
+                        <div class="stat">
+                            <span>👥 Peers:</span>
+                            <span class="stat-value peers">${torrent.peers}</span>
+                        </div>
+                        <div class="stat">
+                            <span>📁 Size:</span>
+                            <span class="stat-value">${torrent.size}</span>
+                        </div>
+                    </div>
+                    <div class="torrent-actions">
+                        ${torrent.magnet ? `<a href="${torrent.magnet}" class="btn btn-magnet">🧲 Magnet Link</a>` : ''}
+                        ${torrent.url ? `<a href="${torrent.url}" target="_blank" class="btn btn-details">📋 Details</a>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            showResults();
+        }
+
+        function parseSize(sizeStr) {
+            if (!sizeStr || sizeStr === 'Unknown') return 0;
+            
+            const match = sizeStr.match(/([\d.]+)\s*([A-Z]+)/i);
+            if (!match) return 0;
+            
+            const value = parseFloat(match[1]);
+            const unit = match[2].toUpperCase();
+            
+            const units = {
+                'B': 1 / 1024 / 1024,
+                'KB': 1 / 1024,
+                'MB': 1,
+                'GB': 1024,
+                'TB': 1024 * 1024
+            };
+            
+            return value * (units[unit] || 0);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showLoading() {
+            loadingIndicator.style.display = 'block';
+            searchBtn.disabled = true;
+            searchBtn.textContent = 'Searching...';
+        }
+
+        function hideLoading() {
+            loadingIndicator.style.display = 'none';
+            searchBtn.disabled = false;
+            searchBtn.textContent = 'Search';
+        }
+
+        function showResults() {
+            resultsContainer.style.display = 'block';
+        }
+
+        function hideResults() {
+            resultsContainer.style.display = 'none';
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+        }
+
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+
+        // Initialize
+        searchInput.focus();
+    </script>
+</body>
+</html>

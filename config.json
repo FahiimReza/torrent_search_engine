@@ -1,0 +1,137 @@
+{
+  "app": {
+    "secret_key": "your-secret-key-change-this-in-production",
+    "debug": true,
+    "host": "0.0.0.0",
+    "port": 5000
+  },
+  "cache": {
+    "timeout_seconds": 300,
+    "max_size": 1000
+  },
+  "search": {
+    "max_results_per_source": 20,
+    "max_total_results": 100,
+    "request_timeout": 15,
+    "max_workers": 8
+  },
+  "tor": {
+    "enabled": true,
+    "socks_proxy": "socks5h://127.0.0.1:9050",
+    "timeout": 30
+  },
+  "sources": {
+    "regular": {
+      "1337x": {
+        "enabled": true,
+        "base_url": "https://1337x.to",
+        "search_path": "/search/{query}/1/"
+      },
+      "thepiratebay": {
+        "enabled": true,
+        "base_url": "https://thepiratebay.org",
+        "search_path": "/search/{query}/0/99/0"
+      },
+      "yts": {
+        "enabled": true,
+        "base_url": "https://yts.mx",
+        "api_path": "/api/v2/list_movies.json?query_term={query}"
+      },
+      "eztv": {
+        "enabled": true,
+        "base_url": "https://eztv.re",
+        "search_path": "/search/{query}"
+      },
+      "torlock": {
+        "enabled": true,
+        "base_url": "https://www.torlock2.com",
+        "search_path": "/all/torrents/{query}.html"
+      },
+      "nyaa": {
+        "enabled": true,
+        "base_url": "https://nyaa.si",
+        "search_path": "/?f=0&c=0_0&q={query}&s=seeders&o=desc"
+      },
+      "zooqle": {
+        "enabled": true,
+        "base_url": "https://zooqle.com",
+        "search_path": "/search?q={query}"
+      },
+      "btdb": {
+        "enabled": true,
+        "base_url": "https://btdb.to",
+        "search_path": "/q/{query}"
+      },
+      "glodls": {
+        "enabled": true,
+        "base_url": "https://glodls.to",
+        "search_path": "/search_results.php?search={query}&cat=0"
+      },
+      "magnetdl": {
+        "enabled": true,
+        "base_url": "https://www.magnetdl.com",
+        "search_path": "/{query}/se/desc/1/"
+      },
+      "torrentfunk": {
+        "enabled": true,
+        "base_url": "https://www.torrentfunk.com",
+        "search_path": "/torrent/{query}.html"
+      },
+      "idope": {
+        "enabled": true,
+        "base_url": "https://idope.se",
+        "search_path": "/search/{query}/"
+      },
+      "torrentgalaxy": {
+        "enabled": true,
+        "base_url": "https://torrentgalaxy.to",
+        "search_path": "/torrents.php?search={query}&lang=0"
+      },
+      "yourbittorrent": {
+        "enabled": true,
+        "base_url": "https://yourbittorrent.com",
+        "search_path": "/?q={query}"
+      },
+      "bitsearch": {
+        "enabled": true,
+        "base_url": "https://bitsearch.to",
+        "search_path": "/search?q={query}&category=all"
+      },
+      "sumotorrent": {
+        "enabled": true,
+        "base_url": "https://www.sumotorrent.sx",
+        "search_path": "/search/{query}"
+      }
+    },
+    "onion": {
+      "thepiratebay_onion": {
+        "enabled": true,
+        "base_url": "http://piratebayo3klnzokct3wt5yyxb2vpebbuyjl7m623iaxmqhsd52coid.onion",
+        "search_path": "/search/{query}/0/99/0"
+      },
+      "1337x_onion": {
+        "enabled": false,
+        "base_url": "http://1337xst3a43e5i.onion",
+        "search_path": "/search/{query}/1/"
+      },
+      "rarbg_onion": {
+        "enabled": false,
+        "base_url": "http://rarbgto3t2t3eixj.onion",
+        "search_path": "/search/{query}"
+      }
+    }
+  },
+  "headers": {
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "accept_language": "en-US,en;q=0.5",
+    "accept_encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "upgrade_insecure_requests": "1"
+  },
+  "retry": {
+    "total_retries": 3,
+    "backoff_factor": 1,
+    "status_forcelist": [429, 500, 502, 503, 504]
+  }
+}
